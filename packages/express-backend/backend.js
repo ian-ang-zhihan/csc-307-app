@@ -55,6 +55,9 @@ const findUserByNameAndJob = (name, job) => {
   return result;
 };
 
+function generateRandomID() {
+  return (Math.random().toString());
+} 
 const addUser = (user) => {
   users.users_list.push(user);
   return user;
@@ -82,8 +85,11 @@ app.get("/users", (req, res) => {
 
 app.post("/users", (req, res) => {
   const userToAdd = req.body;
-  addUser(userToAdd);
-  res.send();
+  userToAdd.id = generateRandomID();
+  console.log("userToAdd = ", req.body);
+  const newUser = addUser(userToAdd);
+  console.log(newUser);
+  res.status(201).send(newUser);
 });
 
 const findUserById = (id) => 
@@ -101,6 +107,8 @@ app.get("/users/:id", (req, res) => {
 });
 
 const deleteUserById = (id) => {
+  // console.log("deleteUserByID id = ", id);
+  // console.log("deleteUserByID users.users_list= ", users.users_list);
   if (findUserById(id)) {
     users.users_list = users.users_list.filter((user) => user.id !== id);
     return true;
@@ -111,14 +119,20 @@ const deleteUserById = (id) => {
 }
 
 app.delete("/users/:id", (req, res) => {
+  // console.log("req = ", req);
+  // console.log("res = ", res);
+
   const id = req.params.id;
+  // console.log("id = ", id);
+
   let result = deleteUserById(id);
-  console.log("result = ", result);
+  // console.log("result = ", result);
+
   if (result === false) {
     res.status(404).send("User Not Found");
   } else {
-    console.log("after delete = ", users.users_list);
-    res.send();
+    // console.log("after delete = ", users.users_list);
+    res.status(204).send();
   }
 });
 

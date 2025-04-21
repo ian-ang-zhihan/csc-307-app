@@ -32,15 +32,35 @@ function MyApp() {
     }
 
     function removeOneCharacter(index) {
-        const updated = characters.filter((character, i) => {
-            return i !== index;
-        });
-        setCharacters(updated);
+        const userToDelete = characters[index];
+        const userID = userToDelete.id;
+
+        fetch(`http://localhost:8000/users/${userID}`, { method: "DELETE" })
+          .then((res) => {
+            console.log("res = ", res);
+            if (res.status === 204) {
+              const updated = characters.filter((character, i) => i !== index);
+              console.log("updated = ", updated);
+              setCharacters(updated);
+            } else if (res.status === 404) {
+              console.log("Error 404: User Not Found");
+            } else {
+              console.log("Unexpected error during delete");
+            }
+          })
+          .catch((error) => {
+            console.log("Error deleting user: ", error);
+          });
     };
 
     function updateList(person) {
         postUser(person)
-            .then(() => setCharacters([...characters, person]))
+            .then((res) => {
+                if (res.status === 201) {
+                    return res.json()
+                }
+            })
+            .then((characterJSON) => setCharacters([...characters, characterJSON]))
             .catch((error) => {
                 console.log(error);
             });
