@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import userService from "./services/user-service.js";
 
 const app = express();
 const port = 8000;
@@ -7,6 +8,7 @@ const port = 8000;
 app.use(cors());
 app.use(express.json());
 
+/*
 const users = {
   users_list: [
     {
@@ -36,6 +38,7 @@ const users = {
     },
   ],
 };
+*/
 
 app.get("/", (req, res) => {
     res.send("Hello World!");
@@ -70,26 +73,29 @@ app.get("/users", (req, res) => {
   const job = req.query.job;
   // console.log("job = ", job);
 
-  if (name !== undefined && job !== undefined) {
-    let result = findUserByNameAndJob(name, job);
-    result = { users_list: result };
-    res.send(result);
-  } else if (name !== undefined) {
-    let result = findUserByName(name);
-    result = { users_list: result };
-    res.send(result);
-  } else {
-    res.send(users);
-  }
+  userService
+    .getUsers(name, job)
+    .then((users) => {
+      res.send({ users_list: users });
+    })
+    .catch((error) => {
+      console.log("Error fetching users: ", error);
+      res.status(500).send("Internal Server Error");
+    })
 });
 
 app.post("/users", (req, res) => {
   const userToAdd = req.body;
-  userToAdd.id = generateRandomID();
-  console.log("userToAdd = ", req.body);
-  const newUser = addUser(userToAdd);
-  console.log(newUser);
-  res.status(201).send(newUser);
+
+  userService
+    .addUser(userToAdd)
+    .then((newUser) => {
+      res.status(201).send(newUser);
+    })
+    .catch((error) => {
+      console.log("Error adding user: ", error);
+      res.status(500).send("Internal Server Error");
+    })
 });
 
 const findUserById = (id) => 
@@ -98,12 +104,21 @@ const findUserById = (id) =>
 
 app.get("/users/:id", (req, res) => {
   const id = req.params.id;
-  let result = findUserById(id);
-  if (result === undefined) {
-    res.status(404).send("Resource not found.");
-  } else {
-    res.send(result);
-  }
+
+  userService
+    .findUserById(id)
+    .then((user) => {
+      if (user === null) {
+        res.send(404).send("Resouce not found");
+      }
+      else {
+        res.send(user);
+      }
+    })
+    .catch((error) => {
+      console.log("Error finding user by ID: ", error);
+      res.status(500).send("Internal Server Error");
+    })
 });
 
 const deleteUserById = (id) => {
