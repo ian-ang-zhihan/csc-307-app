@@ -33,14 +33,12 @@ function MyApp() {
 
     function removeOneCharacter(index) {
         const userToDelete = characters[index];
-        const userID = userToDelete.id;
+        const userID = userToDelete._id;
 
         fetch(`http://localhost:8000/users/${userID}`, { method: "DELETE" })
           .then((res) => {
-            console.log("res = ", res);
             if (res.status === 204) {
               const updated = characters.filter((character, i) => i !== index);
-              console.log("updated = ", updated);
               setCharacters(updated);
             } else if (res.status === 404) {
               console.log("Error 404: User Not Found");

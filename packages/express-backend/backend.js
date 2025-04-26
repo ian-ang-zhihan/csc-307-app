@@ -19,63 +19,11 @@ const port = 8000;
 app.use(cors());
 app.use(express.json());
 
-/*
-const users = {
-  users_list: [
-    {
-      id: "xyz789",
-      name: "Charlie",
-      job: "Janitor",
-    },
-    {
-      id: "abc123",
-      name: "Mac",
-      job: "Bouncer",
-    },
-    {
-      id: "ppp222",
-      name: "Mac",
-      job: "Professor",
-    },
-    {
-      id: "yat999",
-      name: "Dee",
-      job: "Aspring actress",
-    },
-    {
-      id: "zap555",
-      name: "Dennis",
-      job: "Bartender",
-    },
-  ],
-};
-*/
 
 app.get("/", (req, res) => {
     res.send("Hello World!");
 });
 
-// Step 4
-const findUserByName = (name) => {
-  return users.users_list.filter(
-    (user) => user.name === name
-  );
-};
-
-const findUserByNameAndJob = (name, job) => {
-  let result = users.users_list.filter((user) => {
-    return ((user.name === name) && (user.job === job))
-  });
-  return result;
-};
-
-function generateRandomID() {
-  return (Math.random().toString());
-} 
-const addUser = (user) => {
-  users.users_list.push(user);
-  return user;
-};
 
 app.get("/users", (req, res) => {
   const name = req.query.name;
@@ -95,6 +43,7 @@ app.get("/users", (req, res) => {
     })
 });
 
+
 app.post("/users", (req, res) => {
   const userToAdd = req.body;
 
@@ -108,9 +57,6 @@ app.post("/users", (req, res) => {
       res.status(500).send("Internal Server Error");
     })
 });
-
-const findUserById = (id) => 
-  users.users_list.find((user) => user.id === id);
 
 
 app.get("/users/:id", (req, res) => {
@@ -130,36 +76,29 @@ app.get("/users/:id", (req, res) => {
       console.log("Error finding user by ID: ", error);
       res.status(500).send("Internal Server Error");
     })
-});
-
-const deleteUserById = (id) => {
-  // console.log("deleteUserByID id = ", id);
-  // console.log("deleteUserByID users.users_list= ", users.users_list);
-  if (findUserById(id)) {
-    users.users_list = users.users_list.filter((user) => user.id !== id);
-    return true;
-  } else {
-    console.log("Error 404: User Not Found");
-    return false;
-  }
-}
-
-app.delete("/users/:id", (req, res) => {
-  // console.log("req = ", req);
-  // console.log("res = ", res);
-
-  const id = req.params.id;
-  // console.log("id = ", id);
-
-  let result = deleteUserById(id);
-  // console.log("result = ", result);
-
-  if (result === false) {
-    res.status(404).send("User Not Found");
-  } else {
-    // console.log("after delete = ", users.users_list);
-    res.status(204).send();
-  }
+  });
+  
+  app.delete("/users/:id", (req, res) => {
+    // console.log("req = ", req);
+    // console.log("res = ", res);
+    
+    const id = req.params.id;
+    // console.log("id = ", id);
+    
+    userService
+      .deleteUserById(id)
+      .then((result) => {
+        if (result === null) {
+          res.status(404).send("User Not Found");
+        }
+        else {
+          res.status(204).send();
+        } 
+      })
+      .catch((error) => {
+        console.log("Error deleting user by ID: ", error);
+        res.status(500).send("Internal Server Error");
+      })
 });
 
 app.listen(port, () => {
